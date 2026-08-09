@@ -69,18 +69,14 @@
 
 .scrollStage {
   position: relative;
-  height: max(100svh, 50rem);
-  overflow: hidden;
-  isolation: isolate;
+  height: auto;
+  overflow: visible;
   background: #1c1a18;
 }
 
 .heroPanel {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
+  position: relative;
   background: #483b2e;
-  will-change: transform;
 }
 
 .navbar {
@@ -271,16 +267,13 @@
 }
 
 .about {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
+  position: relative;
   display: flex;
-  min-height: 100%;
+  min-height: 100svh;
   flex-direction: column;
   padding: clamp(1.5rem, 3vw, 3rem);
   overflow: hidden;
   border-top: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 0;
   background: #1c1a18;
   color: #ffffff;
 }
@@ -304,7 +297,7 @@
 .aboutGrid {
   display: grid;
   flex: 1;
-  grid-template-columns: minmax(0, 2.05fr) minmax(18rem, 0.95fr);
+  grid-template-columns: minmax(0, 1.7fr) minmax(18rem, 0.8fr);
   align-items: center;
   gap: clamp(3rem, 7vw, 8rem);
   padding: clamp(4.5rem, 10vh, 8rem) 0;
@@ -312,7 +305,7 @@
 
 .aboutTitle {
   margin: 0;
-  font-size: clamp(4.2rem, 8.5vw, 9.4rem);
+  font-size: clamp(4rem, 6.7vw, 7.6rem);
   font-weight: 600;
   letter-spacing: -0.075em;
   line-height: 0.87;
@@ -543,9 +536,8 @@
   }
 
   .about {
-    min-height: 100%;
+    min-height: 100svh;
     padding: 1.25rem 1rem 1.5rem;
-    border-radius: 0;
   }
 
   .aboutTopline p:last-child {
@@ -590,18 +582,5 @@
 @media (prefers-reduced-motion: reduce) {
   .loader {
     display: none;
-  }
-
-  .scrollStage {
-    height: auto;
-    overflow: visible;
-  }
-
-  .heroPanel,
-  .about {
-    position: relative;
-    inset: auto;
-    min-height: 100svh;
-    transform: none !important;
   }
 }

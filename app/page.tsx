@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import {
-  type MouseEvent as ReactMouseEvent,
   useEffect,
   useLayoutEffect,
   useRef,
@@ -24,37 +23,8 @@ export default function Home() {
   const pageRef = useRef<HTMLDivElement>(null);
   const loaderRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
-  const scrollStageRef = useRef<HTMLDivElement>(null);
-  const heroPanelRef = useRef<HTMLDivElement>(null);
   const aboutRef = useRef<HTMLElement>(null);
   const [activeSection, setActiveSection] = useState("home");
-
-  const handleNavClick = (
-    event: ReactMouseEvent<HTMLAnchorElement>,
-    sectionId: string,
-  ) => {
-    setActiveSection(sectionId);
-
-    if (sectionId !== "home" && sectionId !== "about") return;
-
-    const stage = scrollStageRef.current;
-    if (!stage) return;
-
-    event.preventDefault();
-
-    const stageTop = stage.getBoundingClientRect().top + window.scrollY;
-    const targetScroll =
-      sectionId === "about" ? stageTop + window.innerHeight : stageTop;
-    const reduceMotion = window.matchMedia(
-      "(prefers-reduced-motion: reduce)",
-    ).matches;
-
-    window.history.replaceState(null, "", `#${sectionId}`);
-    window.scrollTo({
-      top: targetScroll,
-      behavior: reduceMotion ? "auto" : "smooth",
-    });
-  };
 
   useEffect(() => {
     const sectionIds = navItems.map((item) => item.id);
@@ -67,14 +37,7 @@ export default function Home() {
     syncWithHash();
     window.addEventListener("hashchange", syncWithHash);
 
-    const reduceMotion = window.matchMedia(
-      "(prefers-reduced-motion: reduce)",
-    ).matches;
-    const observedSectionIds = reduceMotion
-      ? sectionIds
-      : sectionIds.filter((id) => id !== "home" && id !== "about");
-
-    const sections = observedSectionIds
+    const sections = sectionIds
       .map((id) => document.getElementById(id))
       .filter((section): section is HTMLElement => section !== null);
 
@@ -187,11 +150,9 @@ export default function Home() {
 
   useLayoutEffect(() => {
     const page = pageRef.current;
-    const scrollStage = scrollStageRef.current;
-    const heroPanel = heroPanelRef.current;
     const about = aboutRef.current;
 
-    if (!page || !scrollStage || !heroPanel || !about) return;
+    if (!page || !about) return;
 
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
@@ -206,51 +167,18 @@ export default function Home() {
       gsap.registerPlugin(ScrollTrigger);
 
       scrollContext = gsap.context(() => {
-        const aboutElements = gsap.utils.toArray<HTMLElement>(
-          `.${styles.aboutReveal}`,
-        );
-
-        gsap.set(aboutElements, {
+        gsap.from(`.${styles.aboutReveal}`, {
           autoAlpha: 0,
-          y: 38,
+          y: 28,
+          duration: 0.72,
+          stagger: 0.075,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: about,
+            start: "top 78%",
+            once: true,
+          },
         });
-
-        gsap
-          .timeline({
-            scrollTrigger: {
-              trigger: scrollStage,
-              start: "top top",
-              end: () => `+=${window.innerHeight}`,
-              pin: true,
-              scrub: 0.9,
-              anticipatePin: 1,
-              invalidateOnRefresh: true,
-              onUpdate: (self) => {
-                const currentSection = self.progress > 0.55 ? "about" : "home";
-                setActiveSection((previous) =>
-                  previous === currentSection ? previous : currentSection,
-                );
-              },
-            },
-          })
-          .to(heroPanel, {
-            yPercent: -100,
-            duration: 1,
-            ease: "none",
-          })
-          .to(
-            aboutElements,
-            {
-              autoAlpha: 1,
-              y: 0,
-              duration: 0.32,
-              stagger: 0.025,
-              ease: "power2.out",
-            },
-            0.52,
-          );
-
-        ScrollTrigger.refresh();
       }, page);
     };
 
@@ -287,8 +215,8 @@ export default function Home() {
 
       <div ref={contentRef} className={styles.siteContent}>
         <main>
-          <div ref={scrollStageRef} className={styles.scrollStage}>
-            <div ref={heroPanelRef} className={styles.heroPanel}>
+          <div className={styles.scrollStage}>
+            <div className={styles.heroPanel}>
               <header className={`${styles.navbar} ${styles.heroReveal}`}>
           <a className={styles.brand} href="#home" aria-label="Shaikh Yousuf, home">
             Shaikh Yousuf
@@ -300,7 +228,7 @@ export default function Home() {
                 className={activeSection === item.id ? styles.activeLink : undefined}
                 href={`#${item.id}`}
                 aria-current={activeSection === item.id ? "page" : undefined}
-                onClick={(event) => handleNavClick(event, item.id)}
+                onClick={() => setActiveSection(item.id)}
                 key={item.id}
               >
                 {item.label}
