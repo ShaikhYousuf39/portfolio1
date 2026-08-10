@@ -15,16 +15,134 @@ const name = "Shaikh Yousuf";
 const navItems = [
   { id: "home", label: "Home" },
   { id: "about", label: "About Me" },
-  { id: "case-studies", label: "Case Studies" },
+  { id: "projects", label: "Projects" },
   { id: "services", label: "Services" },
 ];
 
+const projects = [
+  {
+    title: "Nook",
+    year: "2026",
+    description:
+      "An inspiration archive for creatives to save, organize, and revisit references in a more immersive way.",
+    tags: ["Creative Tool", "Chrome Extension"],
+    themeClass: styles.projectLime,
+  },
+  {
+    title: "Remake Tools",
+    year: "2025",
+    description:
+      "A creative-stack web app that helps makers assemble, remix, and ship their toolkit.",
+    tags: ["Web App", "Creative Stack"],
+    themeClass: styles.projectViolet,
+  },
+  {
+    title: "Balanc\u00e9",
+    year: "2025",
+    description:
+      "A mobile-first learning experience that helps dancers practice, track progress, and stay consistent.",
+    tags: ["Mobile App", "Product Design"],
+    themeClass: styles.projectRose,
+  },
+];
+
+const services = [
+  {
+    title: "Landing Pages",
+    description: "High-converting, modern, and responsive landing experiences.",
+    visualClass: styles.serviceVisualLanding,
+  },
+  {
+    title: "Business Websites",
+    description: "Professional websites built for brands and growing businesses.",
+    visualClass: styles.serviceVisualBusiness,
+  },
+  {
+    title: "Web Applications",
+    description: "Full-featured, scalable, and thoughtfully engineered web apps.",
+    visualClass: styles.serviceVisualApplications,
+  },
+  {
+    title: "API & Integrations",
+    description: "Secure APIs and seamless third-party service integrations.",
+    visualClass: styles.serviceVisualApi,
+  },
+];
+
+const scrollToCurrentHash = () => {
+  const targetId = window.location.hash.slice(1);
+  const target = targetId ? document.getElementById(targetId) : null;
+
+  if (!target) return;
+
+  const root = document.documentElement;
+  const previousScrollBehavior = root.style.scrollBehavior;
+
+  root.style.scrollBehavior = "auto";
+  target.scrollIntoView({ block: "start" });
+  root.style.scrollBehavior = previousScrollBehavior;
+};
+
 export default function Home() {
   const pageRef = useRef<HTMLDivElement>(null);
+  const cursorRef = useRef<HTMLDivElement>(null);
   const loaderRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const aboutRef = useRef<HTMLElement>(null);
+  const projectsRef = useRef<HTMLElement>(null);
+  const projectsViewportRef = useRef<HTMLDivElement>(null);
+  const projectsTrackRef = useRef<HTMLDivElement>(null);
+  const servicesRef = useRef<HTMLElement>(null);
   const [activeSection, setActiveSection] = useState("home");
+
+  useEffect(() => {
+    const cursor = cursorRef.current;
+    const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)");
+
+    if (!cursor || !finePointer.matches) return;
+
+    gsap.set(cursor, { xPercent: -50, yPercent: -50 });
+
+    const moveX = gsap.quickTo(cursor, "x", {
+      duration: 0.18,
+      ease: "power3.out",
+    });
+    const moveY = gsap.quickTo(cursor, "y", {
+      duration: 0.18,
+      ease: "power3.out",
+    });
+
+    const handlePointerMove = (event: PointerEvent) => {
+      moveX(event.clientX);
+      moveY(event.clientY);
+      cursor.dataset.visible = "true";
+    };
+
+    const handlePointerOver = (event: PointerEvent) => {
+      const target = event.target;
+
+      cursor.dataset.active =
+        target instanceof Element &&
+        Boolean(target.closest("a, button, [role='button']"))
+          ? "true"
+          : "false";
+    };
+
+    const handlePointerLeave = () => {
+      cursor.dataset.visible = "false";
+      cursor.dataset.active = "false";
+    };
+
+    window.addEventListener("pointermove", handlePointerMove);
+    window.addEventListener("pointerover", handlePointerOver);
+    document.documentElement.addEventListener("mouseleave", handlePointerLeave);
+
+    return () => {
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerover", handlePointerOver);
+      document.documentElement.removeEventListener("mouseleave", handlePointerLeave);
+    };
+  }, []);
 
   useEffect(() => {
     const sectionIds = navItems.map((item) => item.id);
@@ -76,6 +194,7 @@ export default function Home() {
 
     if (reduceMotion) {
       gsap.set(loader, { display: "none" });
+      requestAnimationFrame(scrollToCurrentHash);
       return;
     }
 
@@ -87,10 +206,12 @@ export default function Home() {
         onComplete: () => {
           document.body.classList.remove("is-loading");
           gsap.set(loader, { display: "none" });
+          gsap.set(content, { clearProps: "opacity,visibility" });
+          requestAnimationFrame(scrollToCurrentHash);
         },
       });
 
-      gsap.set(content, { autoAlpha: 0, y: 36 });
+      gsap.set(content, { autoAlpha: 0 });
 
       timeline
         .from(`.${styles.loaderLetter}`, {
@@ -126,7 +247,7 @@ export default function Home() {
         })
         .to(
           content,
-          { autoAlpha: 1, y: 0, duration: 0.75, ease: "power3.out" },
+          { autoAlpha: 1, duration: 0.75, ease: "power3.out" },
           "-=0.62",
         )
         .from(
@@ -190,8 +311,123 @@ export default function Home() {
     };
   }, []);
 
+  useLayoutEffect(() => {
+    const page = pageRef.current;
+    const projectsSection = projectsRef.current;
+    const viewport = projectsViewportRef.current;
+    const track = projectsTrackRef.current;
+
+    if (!page || !projectsSection || !viewport || !track) return;
+
+    let projectContext: gsap.Context | undefined;
+    let mediaContext: ReturnType<typeof gsap.matchMedia> | undefined;
+    let isMounted = true;
+
+    const setupProjectsScroll = async () => {
+      const { ScrollTrigger } = await import("gsap/ScrollTrigger");
+
+      if (!isMounted) return;
+
+      gsap.registerPlugin(ScrollTrigger);
+      mediaContext = gsap.matchMedia();
+
+      projectContext = gsap.context(() => {
+        mediaContext?.add(
+          "(min-width: 901px) and (prefers-reduced-motion: no-preference)",
+          () => {
+            const getScrollDistance = () =>
+              Math.max(0, track.scrollWidth - viewport.clientWidth);
+
+            const syncSectionHeight = () => {
+              projectsSection.style.setProperty(
+                "--projects-scroll-distance",
+                `${getScrollDistance()}px`,
+              );
+            };
+
+            syncSectionHeight();
+
+            const movement = gsap.to(track, {
+              x: () => -getScrollDistance(),
+              ease: "none",
+              scrollTrigger: {
+                trigger: projectsSection,
+                start: "top top",
+                end: "bottom bottom",
+                scrub: 0.65,
+                invalidateOnRefresh: true,
+                onRefreshInit: syncSectionHeight,
+              },
+            });
+
+            return () => {
+              movement.scrollTrigger?.kill();
+              projectsSection.style.removeProperty(
+                "--projects-scroll-distance",
+              );
+            };
+          },
+        );
+      }, page);
+
+      document.fonts.ready.then(() => {
+        if (isMounted) ScrollTrigger.refresh();
+      });
+    };
+
+    void setupProjectsScroll();
+
+    return () => {
+      isMounted = false;
+      mediaContext?.revert();
+      projectContext?.revert();
+    };
+  }, []);
+
+  useLayoutEffect(() => {
+    const page = pageRef.current;
+    const servicesSection = servicesRef.current;
+
+    if (!page || !servicesSection) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    let servicesContext: gsap.Context | undefined;
+    let isMounted = true;
+
+    const setupServicesReveal = async () => {
+      const { ScrollTrigger } = await import("gsap/ScrollTrigger");
+
+      if (!isMounted) return;
+
+      gsap.registerPlugin(ScrollTrigger);
+      servicesContext = gsap.context(() => {
+        gsap.from(`.${styles.serviceReveal}`, {
+          autoAlpha: 0,
+          y: 34,
+          duration: 0.75,
+          stagger: 0.08,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: servicesSection,
+            start: "top 72%",
+            once: true,
+          },
+        });
+      }, page);
+    };
+
+    void setupServicesReveal();
+
+    return () => {
+      isMounted = false;
+      servicesContext?.revert();
+    };
+  }, []);
+
   return (
     <div ref={pageRef} className={styles.page}>
+      <div ref={cursorRef} className={styles.cursor} aria-hidden="true" />
+
       <div ref={loaderRef} className={styles.loader} role="status">
         <div className={styles.loaderInner}>
           <p className={styles.loaderName} aria-label={name}>
@@ -290,7 +526,9 @@ export default function Home() {
 
             <section ref={aboutRef} className={styles.about} id="about">
             <div className={`${styles.aboutTopline} ${styles.aboutReveal}`}>
-              <p>(01) About me</p>
+              <span aria-hidden="true" />
+              <p>About me</p>
+              <i aria-hidden="true" />
               <p>Developer · Designer · Problem solver</p>
             </div>
 
@@ -339,6 +577,149 @@ export default function Home() {
               <span>Development</span>
               <span>Interaction</span>
             </div>
+            </section>
+
+            <section
+              ref={projectsRef}
+              className={styles.projects}
+              id="projects"
+            >
+              <div className={styles.projectsShell}>
+                <div className={styles.projectsIntro}>
+                  <p className={styles.projectsEyebrow}>
+                    <span aria-hidden="true" /> Since 2024
+                  </p>
+                  <h2>Selected projects</h2>
+                  <p className={styles.projectsDescription}>
+                    A collection of digital products shaped by curiosity,
+                    thoughtful design, and reliable code.
+                  </p>
+                  <p className={styles.projectsScrollHint}>
+                    Scroll <span aria-hidden="true">→</span>
+                  </p>
+                </div>
+
+                <div
+                  ref={projectsViewportRef}
+                  className={styles.projectsViewport}
+                >
+                  <div ref={projectsTrackRef} className={styles.projectsTrack}>
+                    {projects.map((project, index) => (
+                      <article className={styles.projectCard} key={project.title}>
+                        <div
+                          className={`${styles.projectVisual} ${project.themeClass}`}
+                          aria-hidden="true"
+                        >
+                          <div className={styles.mockWindow}>
+                            <div className={styles.mockToolbar}>
+                              <div className={styles.mockLogo}>SY</div>
+                              <div className={styles.mockToolbarLinks}>
+                                <span />
+                                <span />
+                                <span />
+                              </div>
+                              <div className={styles.mockToolbarButton} />
+                            </div>
+                            <div className={styles.mockBody}>
+                              <div className={styles.mockSidebar}>
+                                <strong />
+                                <span />
+                                <span />
+                                <span />
+                                <span />
+                              </div>
+                              <div className={styles.mockContent}>
+                                <div className={styles.mockHeading}>
+                                  <span />
+                                  <i />
+                                </div>
+                                <div className={styles.mockTiles}>
+                                  {Array.from({ length: 8 }).map((_, tileIndex) => (
+                                    <span key={tileIndex} />
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          <span className={styles.projectNumber}>
+                            0{index + 1}
+                          </span>
+                        </div>
+
+                        <div className={styles.projectInfo}>
+                          <div className={styles.projectHeadingRow}>
+                            <h3>{project.title}</h3>
+                            <span>{project.year}</span>
+                          </div>
+                          <p>{project.description}</p>
+                          <ul className={styles.projectTags} aria-label="Project tags">
+                            {project.tags.map((tag) => (
+                              <li key={tag}>{tag}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      </article>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section
+              ref={servicesRef}
+              className={styles.services}
+              id="services"
+            >
+              <div className={`${styles.servicesHeader} ${styles.serviceReveal}`}>
+                <div className={styles.servicesLabel}>
+                  <span aria-hidden="true" />
+                  <p>Services</p>
+                  <i aria-hidden="true" />
+                </div>
+
+                <div className={styles.servicesHeadingRow}>
+                  <h2>
+                    What I <span>Do.</span>
+                  </h2>
+                  <p>
+                    I help businesses and individuals turn clear ideas into
+                    fast, modern, and scalable digital products.
+                  </p>
+                </div>
+              </div>
+
+              <div className={styles.servicesGrid}>
+                {services.map((service, index) => (
+                  <article
+                    className={`${styles.serviceCard} ${styles.serviceReveal}`}
+                    key={service.title}
+                  >
+                    <div
+                      className={`${styles.serviceVisual} ${service.visualClass}`}
+                      aria-hidden="true"
+                    />
+
+                    <span className={styles.serviceNumber}>0{index + 1}</span>
+
+                    <div className={styles.serviceBody}>
+                      <h3>{service.title}</h3>
+                      <p>{service.description}</p>
+                    </div>
+
+                    <a
+                      className={styles.serviceLink}
+                      href={`mailto:hello@shaikhyousuf.dev?subject=${encodeURIComponent(
+                        `${service.title} project inquiry`,
+                      )}`}
+                    >
+                      <span>View details</span>
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M5 19 19 5M8 5h11v11" />
+                      </svg>
+                    </a>
+                  </article>
+                ))}
+              </div>
             </section>
           </div>
         </main>
