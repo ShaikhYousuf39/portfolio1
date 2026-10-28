@@ -27,12 +27,65 @@ const faqs = [
 const about = "I believe great websites need both imagination and intention. I’m Shaikh Yousuf, a developer turning ambitious ideas into thoughtful digital experiences. Built with care. Made to feel different.";
 
 function Orbit({ className = "" }: { className?: string }) {
-  return <svg className={className} viewBox="0 0 100 100" fill="none" aria-hidden="true"><g stroke="currentColor" strokeWidth="2.5"><ellipse cx="50" cy="50" rx="44" ry="18" transform="rotate(-35 50 50)"/><ellipse cx="50" cy="50" rx="44" ry="18" transform="rotate(35 50 50)"/><circle cx="50" cy="50" r="8" fill="currentColor" stroke="none"/></g></svg>;
+  return <svg className={className} viewBox="0 0 100 100" fill="none" aria-hidden="true"><g stroke="currentColor" strokeWidth="2.5"><ellipse cx="50" cy="50" rx="44" ry="18" transform="rotate(-35 50 50)" /><ellipse cx="50" cy="50" rx="44" ry="18" transform="rotate(35 50 50)" /><circle cx="50" cy="50" r="8" fill="currentColor" stroke="none" /></g></svg>;
 }
 
 export default function PortfolioSections() {
   const root = useRef<HTMLDivElement>(null);
   const [step, setStep] = useState(0);
+  const [flipping, setFlipping] = useState(false);
+  const processCard = useRef<HTMLDivElement>(null);
+  const flip = useRef<gsap.core.Timeline | null>(null);
+
+  const turningPage = useRef<HTMLDivElement | null>(null);
+  useLayoutEffect(() => () => { flip.current?.kill(); turningPage.current?.remove(); }, []);
+
+  const switchStep = (direction: number) => {
+    if (flip.current?.isActive()) return;
+    const next = (step + direction + process.length) % process.length;
+    if (!processCard.current || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setStep(next);
+      return;
+    }
+    setFlipping(true);
+    const card = processCard.current;
+    // Keep the outgoing sheet above the new content throughout the turn.
+    const page = card.cloneNode(true) as HTMLDivElement;
+    page.removeAttribute("data-reveal");
+    page.setAttribute("aria-hidden", "true");
+    page.inert = true;
+    page.classList.add(s.turningPage);
+    Object.assign(page.style, {
+      position: "absolute", margin: "0", left: `${card.offsetLeft}px`,
+      top: `${card.offsetTop}px`, width: `${card.offsetWidth}px`,
+      height: `${card.offsetHeight}px`, transform: "none", opacity: "1",
+    });
+    page.querySelector(`.${s.processStar}`)?.remove();
+    const corner = document.createElement("div");
+    corner.className = s.pageFold;
+    corner.style[direction > 0 ? "right" : "left"] = "0";
+    if (direction < 0) corner.style.transform = "scaleX(-1)";
+    page.appendChild(corner);
+    card.parentElement?.appendChild(page);
+    turningPage.current = page;
+    setStep(next);
+    gsap.set(page, { transformOrigin: direction > 0 ? "left top" : "right top", transformPerspective: 1600 });
+    const foldSize = Math.min(card.offsetWidth * 0.24, 170);
+    flip.current = gsap.timeline({
+      onComplete: () => {
+        page.remove();
+        turningPage.current = null;
+        gsap.set(card, { clearProps: "filter" });
+        setFlipping(false);
+      }
+    })
+      .set(card, { filter: "brightness(0.8)" })
+      .to(corner, { width: foldSize, height: foldSize, duration: 0.28, ease: "power2.out" }, 0)
+      .to(page, { rotation: direction * -1.2, rotationY: direction * -5, y: -5, boxShadow: "0 18px 35px #00000045", duration: 0.28, ease: "power2.out" }, 0)
+      .to(page, { xPercent: direction * -22, y: -28, rotation: direction * -7, rotationY: direction * -22, opacity: 0, duration: 0.55, ease: "power2.inOut" }, 0.22)
+      .to(corner, { width: foldSize * 1.6, height: foldSize * 1.6, duration: 0.5, ease: "power2.inOut" }, 0.22)
+      .to(card, { filter: "brightness(1)", duration: 0.45, ease: "power2.out" }, 0.3);
+  };
   const [selectedWork, setSelectedWork] = useState<number | null>(null);
   const dialog = useRef<HTMLDialogElement>(null);
   const workButtons = useRef<(HTMLButtonElement | null)[]>([]);
@@ -42,7 +95,7 @@ export default function PortfolioSections() {
     let ctx: gsap.Context | undefined;
     let media: gsap.MatchMedia | undefined;
     const element = root.current;
-    let refreshLayout = () => {};
+    let refreshLayout = () => { };
     const onToggle = () => refreshLayout();
     const onTransitionEnd = (event: TransitionEvent) => {
       if (event.propertyName === "height") refreshLayout();
@@ -88,40 +141,40 @@ export default function PortfolioSections() {
     </div>
     <section id="about" className={s.about}>
       <div className={s.aboutStage}>
-      <p className={s.eyebrow}>A little about me</p>
-      <div className={s.aboutStory}>
-      <p className={s.aboutText} aria-label={about}>{about.split(" ").map((word, i) => <span aria-hidden="true" className={s.word} key={i}>{word} </span>)}</p>
-      <div className={s.stickers}><span>Professional overthinkers</span><span>Nerding out on design</span><span>Allergic to generic</span></div>
-      </div>
-      <div className={s.aboutBottom}><span>Independent developer.<br/>Personally invested.</span><span className={s.scrollNote}>A little more scroll <span aria-hidden="true">↓</span></span><span>Design. Develop. Refine.<br/>Then a little more refining.</span></div>
+        <p className={s.eyebrow}>A little about me</p>
+        <div className={s.aboutStory}>
+          <p className={s.aboutText} aria-label={about}>{about.split(" ").map((word, i) => <span aria-hidden="true" className={s.word} key={i}>{word} </span>)}</p>
+          <div className={s.stickers}><span>Professional overthinkers</span><span>Nerding out on design</span><span>Allergic to generic</span></div>
+        </div>
+        <div className={s.aboutBottom}><span>Independent developer.<br />Personally invested.</span><span className={s.scrollNote}>A little more scroll <span aria-hidden="true">↓</span></span><span>Design. Develop. Refine.<br />Then a little more refining.</span></div>
       </div>
     </section>
 
     <section id="projects" className={s.work}>
-      <header className={s.sectionHeading} data-reveal><p className={s.eyebrow}>Featured projects / 2025—2026</p><h2>Selected<br/><span>works</span><sup>(03)</sup></h2><Orbit className={`${s.headingStar} ${s.spin}`}/></header>
+      <header className={s.sectionHeading} data-reveal><p className={s.eyebrow}>Featured projects / 2025—2026</p><h2>Selected<br /><span>works</span><sup>(03)</sup></h2><Orbit className={`${s.headingStar} ${s.spin}`} /></header>
       <div className={s.workGrid}>{work.map((project, i) => <article className={s.project} key={project.name} data-reveal>
         <button className={`${s.projectVisual} ${s[project.style]}`} onClick={() => openWork(i)} ref={el => { workButtons.current[i] = el; }} aria-label={`View ${project.name} project details`}>
           <span className={s.visualLabel}>SY® / DIGITAL EXPERIENCES</span>
           <div className={s.art} data-art>
-            {i === 0 ? <><span className={s.nookWord}>nook<span>®</span></span><div className={s.archiveCard}><div>YOUR NEXT GREAT IDEA<br/>IS HIDING IN HERE.</div><div className={s.archiveTiles}><span>Form<br/>& feeling.</span><span>◎</span><span>Less,<br/>but better.</span></div><footer>A little space for a lot of inspiration. ↗</footer></div></> : i === 1 ? <><div className={s.remakeWord}>RE<br/>MAKE<span>TOOLS FOR<br/>THE WAY<br/>YOU CREATE.</span></div><div className={s.toolBar}><span>⌘</span><span>◎</span><span>↗</span><span>◎</span></div></> : <><span className={s.balanceWord}>balancé</span><div className={s.phone}><span>balancé <small>◎</small></span><h3>Find your<br/><em>rhythm.</em></h3><div className={s.dancer}>↝</div><div className={s.phoneBottom}>A little practice.<br/>A little progress.<b>Let’s move ↗</b></div></div><span className={s.balanceNote}>MAKE YOUR<br/>NEXT MOVE.</span></>}
+            {i === 0 ? <><span className={s.nookWord}>nook<span>®</span></span><div className={s.archiveCard}><div>YOUR NEXT GREAT IDEA<br />IS HIDING IN HERE.</div><div className={s.archiveTiles}><span>Form<br />& feeling.</span><span>◎</span><span>Less,<br />but better.</span></div><footer>A little space for a lot of inspiration. ↗</footer></div></> : i === 1 ? <><div className={s.remakeWord}>RE<br />MAKE<span>TOOLS FOR<br />THE WAY<br />YOU CREATE.</span></div><div className={s.toolBar}><span>⌘</span><span>◎</span><span>↗</span><span>◎</span></div></> : <><span className={s.balanceWord}>balancé</span><div className={s.phone}><span>balancé <small>◎</small></span><h3>Find your<br /><em>rhythm.</em></h3><div className={s.dancer}>↝</div><div className={s.phoneBottom}>A little practice.<br />A little progress.<b>Let’s move ↗</b></div></div><span className={s.balanceNote}>MAKE YOUR<br />NEXT MOVE.</span></>}
           </div>
           <span className={s.viewCircle}>Explore ↗</span><span className={s.visualFoot}>0{i + 1} / {project.year}<span>DESIGN + DEVELOPMENT</span></span>
         </button>
         <div className={s.projectMeta}><h3>{project.name}</h3><span>{project.category}</span><span aria-hidden="true">↗</span></div>
       </article>)}</div>
-      <div className={s.workEnd} data-reveal><Orbit className={s.spin}/><h3>YOUR NEXT BIG IDEA.<br/>MY NEXT GOOD CHALLENGE.</h3><a className={s.pill} href="mailto:hello@shaikhyousuf.dev">Let’s make something <span>↗</span></a></div>
+      <div className={s.workEnd} data-reveal><Orbit className={s.spin} /><h3>YOUR NEXT BIG IDEA.<br />MY NEXT GOOD CHALLENGE.</h3><a className={s.pill} href="mailto:hello@shaikhyousuf.dev">Let’s make something <span>↗</span></a></div>
     </section>
 
     <ServicesJourney />
 
     <section className={s.process}>
-      <header className={s.sectionHeading} data-reveal><p className={s.eyebrow}>The working relationship</p><h2>Good things.<br/>Built together.</h2></header>
-      <div className={s.processCard} data-reveal><span className={s.quoteMark} aria-hidden="true">“</span><div key={step} className={s.stepContent} aria-live="polite"><p className={s.eyebrow}>{process[step].label}</p><h3>{process[step].title}</h3><p>{process[step].text}</p></div><div className={s.processControls}><span>0{step + 1} / 03</span><div><button aria-label="Previous process step" onClick={() => setStep((step + 2) % 3)}>←</button><button aria-label="Next process step" onClick={() => setStep((step + 1) % 3)}>→</button></div></div><Orbit className={`${s.processStar} ${s.spin}`}/></div>
+      <header className={s.sectionHeading} data-reveal><p className={s.eyebrow}>The working relationship</p><h2>Good things.<br />Built together.</h2></header>
+      <div ref={processCard} className={s.processCard} data-reveal aria-busy={flipping}><span className={s.quoteMark} aria-hidden="true">“</span><div className={s.stepContent} aria-live="polite"><p className={s.eyebrow}>{process[step].label}</p><h3>{process[step].title}</h3><p>{process[step].text}</p></div><div className={s.processControls}><span>0{step + 1} / 03</span><div><button aria-label="Previous process step" disabled={flipping} onClick={() => switchStep(-1)}>←</button><button aria-label="Next process step" disabled={flipping} onClick={() => switchStep(1)}>→</button></div></div><Orbit className={`${s.processStar} ${s.spin}`} /></div>
     </section>
 
-    <section className={s.faq} id="faq"><header data-reveal><p className={s.eyebrow}>Frequently asked questions</p><h2>Things<br/>you might<br/><em>ask.</em></h2><div className={s.questionArt} aria-hidden="true">?<Orbit className={s.spin}/></div></header><div className={s.questions}>{faqs.map(([question, answer], i) => <details key={question} className={s.question} name="portfolio-faq" open={i === 0 ? true : undefined}><summary>{question}<span aria-hidden="true">+</span></summary><p>{answer}</p></details>)}</div></section>
+    <section className={s.faq} id="faq"><header data-reveal><p className={s.eyebrow}>Frequently asked questions</p><h2>Things<br />you might<br /><em>ask.</em></h2><div className={s.questionArt} aria-hidden="true">?<Orbit className={s.spin} /></div></header><div className={s.questions}>{faqs.map(([question, answer], i) => <details key={question} className={s.question} name="portfolio-faq" open={i === 0 ? true : undefined}><summary>{question}<span aria-hidden="true">+</span></summary><p>{answer}</p></details>)}</div></section>
 
-    <footer className={s.footer} id="contact"><p className={s.eyebrow} data-reveal>Enough scrolling. Let’s make something.</p><a className={s.bigContact} href="mailto:hello@shaikhyousuf.dev" data-reveal>LET’S TALK<span>↗</span></a><div className={s.footerGrid}><div><span>Have a project in mind?</span><a href="mailto:hello@shaikhyousuf.dev">hello@shaikhyousuf.dev ↗</a></div><nav aria-label="Footer navigation"><a href="#about">About me</a><a href="#projects">Selected work</a><a href="#services">Services</a></nav><p>Code with logic.<br/>Build with imagination.</p></div><div className={s.footerBottom}><span>© {new Date().getFullYear()} Shaikh Yousuf</span><span>Thoughtfully made, down to the last pixel.</span><a href="#home">Back to top ↑</a></div><div className={s.signature} aria-hidden="true">SHAIKH YOUSUF<Orbit/></div></footer>
+    <footer className={s.footer} id="contact"><p className={s.eyebrow} data-reveal>Enough scrolling. Let’s make something.</p><a className={s.bigContact} href="mailto:hello@shaikhyousuf.dev" data-reveal>LET’S TALK<span>↗</span></a><div className={s.footerGrid}><div><span>Have a project in mind?</span><a href="mailto:hello@shaikhyousuf.dev">hello@shaikhyousuf.dev ↗</a></div><nav aria-label="Footer navigation"><a href="#about">About me</a><a href="#projects">Selected work</a><a href="#services">Services</a></nav><p>Code with logic.<br />Build with imagination.</p></div><div className={s.footerBottom}><span>© {new Date().getFullYear()} Shaikh Yousuf</span><span>Thoughtfully made, down to the last pixel.</span><a href="#home">Back to top ↑</a></div></footer>
 
     <dialog className={s.dialog} ref={dialog} onClick={e => { if (e.target === e.currentTarget) dialog.current?.close(); }} onClose={() => { if (selectedWork !== null) workButtons.current[selectedWork]?.focus(); }} aria-labelledby="project-dialog-title"><div className={s.dialogBody}><button className={s.dialogClose} onClick={() => dialog.current?.close()} aria-label="Close project details">×</button>{selectedWork !== null && <><p className={s.eyebrow}>Selected work / {work[selectedWork].year}</p><h2 id="project-dialog-title">{work[selectedWork].name}</h2><p>{work[selectedWork].description}</p><p className={s.dialogCategory}>{work[selectedWork].category}</p><a className={s.pill} href={`mailto:hello@shaikhyousuf.dev?subject=${encodeURIComponent(`Tell me about ${work[selectedWork].name}`)}`}>Ask about this project <span>↗</span></a></>}</div></dialog>
   </div>;
