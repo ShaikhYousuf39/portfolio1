@@ -7,3 +7,126 @@
 @media(prefers-reduced-motion:reduce){.ribbon>div{animation:none}.sections *{scroll-behavior:auto!important;animation:none!important;transition:none!important}.art{transform:none!important}}
 
 .dialog{margin:auto}
+
+/* Curved ribbon and scroll-led about story. */
+.ribbon {
+  height: clamp(180px, 25vw, 440px);
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  transform: none;
+  overflow: hidden;
+  isolation: isolate;
+}
+.ribbonSvg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.ribbonBand { fill: none; stroke: var(--taupe); stroke-width: 145px; }
+.ribbonSvg text { fill: var(--ink); font-size: 62px; font-weight: 850; letter-spacing: -.035em; }
+.about { padding: 0 !important; overflow: visible; }
+.aboutStage {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 60px 7vw 35px;
+  background: var(--ink);
+}
+.aboutStage > .eyebrow { margin: 0 0 35px; }
+.aboutStory { position: relative; max-width: 1230px; width: 100%; margin-inline: auto; }
+.aboutText { margin: 15px auto 40px; max-width: none; font-size: clamp(36px, 4.7vw, 76px); line-height: 1.16; letter-spacing: -.06em; }
+.stickers { position: absolute; inset: 0; display: block; margin: 0; pointer-events: none; z-index: 2; }
+.stickers span {
+  position: absolute;
+  white-space: nowrap;
+  border-radius: 100px;
+  padding: 13px 25px;
+  font-size: clamp(12px, 1.25vw, 20px);
+  font-weight: 650;
+  letter-spacing: -.04em;
+  background: white;
+  color: var(--ink);
+  box-shadow: 0 8px 25px #00000024;
+  transform-origin: 15% 70%;
+}
+.stickers span:nth-child(1) { top: 22%; right: 5%; transform: rotate(-6deg); }
+.stickers span:nth-child(2) { top: 49%; left: 2%; transform: rotate(7deg); background: var(--taupe); color: var(--ink); }
+.stickers span:nth-child(3) { top: 75%; right: 13%; transform: rotate(-6deg); background: white; color: var(--brown); }
+.aboutBottom { margin-top: 40px; width: 100%; font-size: 11px; color: var(--taupe); }
+.scrollNote { display: flex; align-items: center; gap: 14px; text-transform: uppercase; font-size: 9px; letter-spacing: .12em; }
+.scrollNote span { font-size: 23px; }
+.headingStar { width: 125px; opacity: .7; }
+.processStar { width: 140px; }
+.workEnd > svg { width: 85px; color: var(--brown); }
+.projectVisual { border-radius: 10px; transition: border-radius .65s cubic-bezier(.22,1,.36,1); }
+.projectVisual:hover { border-radius: 35px; }
+.projectMeta > span:last-child { transition: transform .4s; }
+.project:hover .projectMeta > span:last-child { transform: translate(4px,-4px); }
+.service summary { transition: padding .45s cubic-bezier(.22,1,.36,1), color .3s; }
+.service:hover summary, .service[open] summary { padding-inline: 12px; }
+.service[open] .serviceIcon { transform: rotate(15deg) scale(1.12); }
+.question summary { transition: color .3s, padding .3s; }
+.question summary:hover { color: var(--taupe); padding-left: 8px; }
+.footerGrid a { width: fit-content; text-decoration: underline; text-decoration-color: transparent; text-underline-offset: 6px; transition: text-decoration-color .3s; }
+.footerGrid a:hover { text-decoration-color: currentColor; }
+.dialog[open] { animation: dialogIn .4s cubic-bezier(.22,1,.36,1); }
+.dialog[open]::backdrop { animation: backdropIn .4s ease; }
+@keyframes dialogIn { from { opacity: 0; transform: translateY(25px) scale(.97); } to { opacity: 1; transform: none; } }
+@keyframes backdropIn { from { opacity: 0; } to { opacity: 1; } }
+@supports (interpolate-size: allow-keywords) {
+  .service, .question { interpolate-size: allow-keywords; }
+  .service::details-content, .question::details-content {
+    height: 0;
+    opacity: 0;
+    overflow: clip;
+    transition: height .4s ease, opacity .4s ease, content-visibility .4s allow-discrete;
+  }
+  .service[open]::details-content, .question[open]::details-content { height: auto; opacity: 1; }
+}
+@media (max-width: 900px) {
+  .aboutStage { padding: 50px 6vw 30px; }
+  .aboutText { font-size: clamp(32px,5.6vw,50px); }
+  .stickers span { padding: 11px 18px; font-size: 13px; }
+  .headingStar { width: 80px; }
+}
+@media (max-width: 600px) {
+  .ribbon { height: 190px; }
+  .ribbonSvg { width: 900px; max-width: none; height: 225px; margin-left: calc((100% - 900px) / 2); }
+  .aboutStage { padding: 35px 6vw 25px; }
+  .aboutStage > .eyebrow { margin-bottom: 30px; }
+  .aboutText { font-size: clamp(27px,7.6vw,40px); line-height: 1.24; margin: 15px auto 35px; }
+  .stickers span { font-size: 11px; padding: 10px 15px; }
+  .stickers span:nth-child(1) { top: 19%; right: -2%; }
+  .stickers span:nth-child(2) { top: 49%; left: -3%; }
+  .stickers span:nth-child(3) { top: 79%; right: 0; }
+  .aboutBottom { margin-top: 25px; font-size: 9px; }
+  .scrollNote { display: none; }
+  .headingStar { width: 55px; }
+  .processStar { width: 80px; }
+}
+@media (max-height: 650px) and (min-width: 601px) {
+  .aboutStage { padding-block: 25px; }
+  .aboutText { font-size: clamp(26px,4vw,52px); margin-block: 10px 20px; }
+  .aboutStage > .eyebrow { margin-bottom: 10px; }
+  .aboutBottom { margin-top: 15px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .aboutStage { min-height: auto; padding-block: 70px; }
+  .stickers { position: static; display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
+  .stickers span { position: static; transform: none !important; }
+  .scrollNote { display: none; }
+  .dialog[open], .dialog[open]::backdrop { animation: none; }
+  .projectVisual:hover { border-radius: 10px; }
+}
+
+/* A seamless, straight marquee: two identical groups form one continuous loop. */
+.straightRibbon { overflow:hidden; background:var(--taupe); color:var(--ink); padding:28px 0; }
+.marqueeTrack { display:flex; width:max-content; animation:marquee 28s linear infinite; will-change:transform; }
+.marqueeGroup { display:flex; flex-shrink:0; }
+.marqueeGroup span { display:flex; align-items:center; gap:35px; padding-right:35px; white-space:nowrap; font-size:clamp(25px,3.8vw,65px); font-weight:800; letter-spacing:-.04em; line-height:1; }
+.marqueeGroup b { font-size:1.1em; }
+@media(max-width:600px) { .straightRibbon { padding:22px 0; } .marqueeGroup span { gap:22px; padding-right:22px; } }
+@media(prefers-reduced-motion:reduce) { .marqueeTrack { animation:none; will-change:auto; } }
