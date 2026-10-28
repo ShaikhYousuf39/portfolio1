@@ -4,6 +4,7 @@ import { useLayoutEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import s from "./portfolio-sections.module.css";
 import ServicesJourney from "./services-journey";
+import ContactSection from "./contact-section";
 
 const work = [
   { name: "Nook", category: "Creative tool · Chrome extension", year: "2026", description: "An inspiration archive for creatives to save, organize, and revisit references in a more immersive way.", style: "nook" },
@@ -172,9 +173,11 @@ export default function PortfolioSections() {
       <div ref={processCard} className={s.processCard} data-reveal aria-busy={flipping}><span className={s.quoteMark} aria-hidden="true">“</span><div className={s.stepContent} aria-live="polite"><p className={s.eyebrow}>{process[step].label}</p><h3>{process[step].title}</h3><p>{process[step].text}</p></div><div className={s.processControls}><span>0{step + 1} / 03</span><div><button aria-label="Previous process step" disabled={flipping} onClick={() => switchStep(-1)}>←</button><button aria-label="Next process step" disabled={flipping} onClick={() => switchStep(1)}>→</button></div></div><Orbit className={`${s.processStar} ${s.spin}`} /></div>
     </section>
 
+    <ContactSection />
+
     <section className={s.faq} id="faq"><header data-reveal><p className={s.eyebrow}>Frequently asked questions</p><h2>Things<br />you might<br /><em>ask.</em></h2><div className={s.questionArt} aria-hidden="true">?<Orbit className={s.spin} /></div></header><div className={s.questions}>{faqs.map(([question, answer], i) => <details key={question} className={s.question} name="portfolio-faq" open={i === 0 ? true : undefined}><summary>{question}<span aria-hidden="true">+</span></summary><p>{answer}</p></details>)}</div></section>
 
-    <footer className={s.footer} id="contact"><p className={s.eyebrow} data-reveal>Enough scrolling. Let’s make something.</p><a className={s.bigContact} href="mailto:hello@shaikhyousuf.dev" data-reveal>LET’S TALK<span>↗</span></a><div className={s.footerGrid}><div><span>Have a project in mind?</span><a href="mailto:hello@shaikhyousuf.dev">hello@shaikhyousuf.dev ↗</a></div><nav aria-label="Footer navigation"><a href="#about">About me</a><a href="#projects">Selected work</a><a href="#services">Services</a></nav><p>Code with logic.<br />Build with imagination.</p></div><div className={s.footerBottom}><span>© {new Date().getFullYear()} Shaikh Yousuf</span><span>Thoughtfully made, down to the last pixel.</span><a href="#home">Back to top ↑</a></div></footer>
+    <footer className={s.footer}><p className={s.eyebrow} data-reveal>Enough scrolling. Let’s make something.</p><a className={s.bigContact} href="mailto:hello@shaikhyousuf.dev" data-reveal>LET’S TALK<span>↗</span></a><div className={s.footerGrid}><div><span>Have a project in mind?</span><a href="mailto:hello@shaikhyousuf.dev">hello@shaikhyousuf.dev ↗</a></div><nav aria-label="Footer navigation"><a href="#about">About me</a><a href="#projects">Selected work</a><a href="#services">Services</a></nav><p>Code with logic.<br />Build with imagination.</p></div><div className={s.footerBottom}><span>© {new Date().getFullYear()} Shaikh Yousuf</span><span>Thoughtfully made, down to the last pixel.</span><a href="#home">Back to top ↑</a></div></footer>
 
     <dialog className={s.dialog} ref={dialog} onClick={e => { if (e.target === e.currentTarget) dialog.current?.close(); }} onClose={() => { if (selectedWork !== null) workButtons.current[selectedWork]?.focus(); }} aria-labelledby="project-dialog-title"><div className={s.dialogBody}><button className={s.dialogClose} onClick={() => dialog.current?.close()} aria-label="Close project details">×</button>{selectedWork !== null && <><p className={s.eyebrow}>Selected work / {work[selectedWork].year}</p><h2 id="project-dialog-title">{work[selectedWork].name}</h2><p>{work[selectedWork].description}</p><p className={s.dialogCategory}>{work[selectedWork].category}</p><a className={s.pill} href={`mailto:hello@shaikhyousuf.dev?subject=${encodeURIComponent(`Tell me about ${work[selectedWork].name}`)}`}>Ask about this project <span>↗</span></a></>}</div></dialog>
   </div>;
