@@ -56,7 +56,7 @@ export default function PortfolioSections() {
       ctx = gsap.context(() => {
         media = gsap.matchMedia();
         media.add("(prefers-reduced-motion: no-preference)", () => {
-          const story = gsap.timeline({ scrollTrigger: { trigger: `.${s.aboutStage}`, start: "top top", end: () => `+=${window.innerHeight * 1.8}`, pin: true, scrub: 0.65, invalidateOnRefresh: true } });
+          const story = gsap.timeline({ scrollTrigger: { trigger: `.${s.aboutStage}`, start: "top top", end: () => `+=${window.innerHeight * 1.8}`, pin: true, refreshPriority: 1, scrub: 0.65, invalidateOnRefresh: true } });
           story.fromTo(`.${s.word}`, { color: "#8d8379" }, { color: "#ffffff", duration: 0.35, stagger: 0.085, ease: "none" }, 0);
           gsap.utils.toArray<HTMLElement>(`.${s.stickers} span`).forEach((tag, i) => {
             story.fromTo(tag, { autoAlpha: 0, scale: 0.5, y: 40, rotation: i === 1 ? -14 : 14 }, { autoAlpha: 1, scale: 1, y: 0, rotation: i === 1 ? 7 : -6, duration: 0.45, ease: "back.out(1.7)" }, 0.65 + i * 0.85);
