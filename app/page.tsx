@@ -282,7 +282,7 @@ export default function Home() {
                 alt="Portrait of Shaikh Yousuf"
                 width={1605}
                 height={2400}
-                sizes="(max-width: 700px) min(90vw, 384px), (max-width: 1100px) min(70vw, 480px), min(48.5vw, 63svh, 672px)"
+                sizes="(max-width: 700px) min(110vw, 512px), (max-width: 1100px) min(76vw, 672px), min(48.5vw, 63svh, 672px)"
                 preload
               />
             </div>
