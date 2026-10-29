@@ -225,7 +225,7 @@
 .hero {
   position: relative;
   z-index: 1;
-  min-height: calc(100svh - 4rem);
+  min-height: max(40rem, calc(100svh - 4rem));
   overflow: hidden;
   background: #483b2e;
 }
@@ -1460,4 +1460,71 @@
     transform: none !important;
     will-change: auto;
   }
+}
+
+/* Keep the title/portrait composition together; let supporting copy flow below it. */
+@media (max-width: 1100px) {
+  .hero {
+    --hero-art-height: clamp(22rem, 68vw, 42rem);
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    grid-template-rows: var(--hero-art-height) auto;
+    gap: 0 2rem;
+    min-height: 0;
+    padding: 0 4vw 2.5rem;
+    align-items: start;
+  }
+  .developerTitle {
+    top: calc(var(--hero-art-height) * .37);
+    font-size: 17vw;
+  }
+  .portrait {
+    top: 0;
+    bottom: auto;
+    width: min(70vw, 30rem);
+    height: var(--hero-art-height);
+    overflow: hidden;
+  }
+  .portrait img { height: 100%; object-fit: contain; object-position: center bottom; }
+  .heroStatement {
+    position: relative;
+    grid-column: 1;
+    grid-row: 2;
+    left: auto;
+    bottom: auto;
+    margin-top: 2rem;
+    font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+    line-height: 1.12;
+  }
+  .heroDetails {
+    position: relative;
+    grid-column: 2;
+    grid-row: 2;
+    right: auto;
+    left: auto;
+    bottom: auto;
+    width: 100%;
+    margin-top: 2rem;
+  }
+  .heroDetails > p { font-size: 1rem; line-height: 1.45; font-weight: 500; }
+  .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1.5rem; }
+  .stats dt { font-size: 2.3rem; }
+  .stats dd { font-size: .75rem; white-space: normal; line-height: 1.4; }
+}
+@media (max-width: 700px) {
+  .hero {
+    --hero-art-height: clamp(20rem, 110vw, 32rem);
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: var(--hero-art-height) auto auto;
+    padding-inline: 5vw;
+    padding-bottom: 2rem;
+  }
+  .portrait { width: min(90vw, 24rem); }
+  .developerTitle { top: calc(var(--hero-art-height) * .35); font-size: 17vw; }
+  .heroStatement { margin-top: 1.5rem; font-size: clamp(1.5rem, 6.8vw, 2.8rem); }
+  .heroDetails { grid-column: 1; grid-row: 3; margin-top: 1.25rem; }
+  .heroDetails > p { max-width: 36rem; font-size: .9rem; line-height: 1.5; }
+  .stats { margin-top: 1.5rem; gap: 1.5rem; }
+  .stats dt { font-size: 2rem; }
+  .stats dd { font-size: .75rem; }
 }

@@ -263,7 +263,7 @@ export default function Home() {
             ))}
           </nav>
 
-          <a className={styles.contactButton} href="mailto:hello@shaikhyousuf.dev">
+          <a className={styles.contactButton} href="#contact">
             <span>Contact</span>
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <path d="m19 6v12c0 .55273-.44775 1-1 1s-1-.44727-1-1v-9.58545l-10.18311 10.18311c-.19531.19531-.45117.29297-.70703.29297s-.51172-.09766-.70703-.29297c-.39062-.39062-.39062-1.02344 0-1.41406l10.1836-10.1836h-9.58643c-.55225 0-1-.44727-1-1s.44775-1 1-1h12c.55225 0 1 .44727 1 1z" />
@@ -282,7 +282,7 @@ export default function Home() {
                 alt="Portrait of Shaikh Yousuf"
                 width={1605}
                 height={2400}
-                sizes="(max-width: 700px) 112vw, 63vh"
+                sizes="(max-width: 700px) min(90vw, 384px), (max-width: 1100px) min(70vw, 480px), min(48.5vw, 63svh, 672px)"
                 preload
               />
             </div>
